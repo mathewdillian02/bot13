@@ -6,7 +6,7 @@ from linebot.models import MessageEvent, TextMessage, TextSendMessage
 from dotenv import load_dotenv
 
 # Load variables from .env file
-#load_dotenv()
+load_dotenv()
 
 app = Flask(__name__)
 
@@ -14,8 +14,8 @@ app = Flask(__name__)
 line_bot_api = LineBotApi(os.getenv('LINE_CHANNEL_ACCESS_TOKEN'))
 handler = WebhookHandler(os.getenv('LINE_CHANNEL_SECRET'))
 
-@app.route("/callback", methods=['POST'])
-def callback():
+@app.route("/webhook", methods=['POST'])
+def webhook():
     # get X-Line-Signature header value
     signature = request.headers['X-Line-Signature']
 
