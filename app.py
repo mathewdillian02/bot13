@@ -62,11 +62,9 @@ def handle_message(event):
 
     if lower_text == '/meme':
         try:
-            # Step A: Get the data from the API
             r = requests.get("https://meme-api.com/gimme/dankmemes").json()
             image_url = r.get('url')
             
-            # Step B: Check if it's a valid image type
             if image_url and image_url.lower().endswith(('.jpg', '.png', '.jpeg')):
                 return line_bot_api.reply_message(
                     event.reply_token,
@@ -78,7 +76,7 @@ def handle_message(event):
             else:
                 return line_bot_api.reply_message(
                     event.reply_token, 
-                    TextSendMessage(text="I found a dank one, but the format was weird. Try /meme again! 😏")
+                    TextSendMessage(text="I found a dank one, but it's a GIF. Try /meme again! 😏")
                 )
         except Exception as e:
             print(f"Meme Error: {e}")
