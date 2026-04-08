@@ -10,7 +10,14 @@ from datetime import datetime
 app = Flask(__name__)
 
 # This will hold our user IDs while the bot is running
-member_mids = set()
+if lower_text == '/mids':
+        # Join all saved IDs into a numbered list
+        id_list = "\n".join([f"• {mid}" for mid in member_mids])
+        reply = f"👥 **Captured Member IDs:**\n\n{id_list}\n\nTotal: {len(member_mids)}"
+        return line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text=reply)
+        ))
 
 # Environment Variables
 line_bot_api = LineBotApi(os.environ.get('CHANNEL_ACCESS_TOKEN'))
