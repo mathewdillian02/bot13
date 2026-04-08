@@ -84,9 +84,33 @@ def handle_message(event):
             return line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Too distracted for memes... 💦"))
 
     # 6. ROAST COMMAND
+    # 6. ROAST COMMAND
     if lower_text.startswith('/roast'):
-        roasts = ["I’d roast you, but my mom told me not to burn trash. 💅", "Error 404: Personality not found.", "You have the charisma of a damp paper towel."]
-        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=random.choice(roasts)))
+        roasts = [
+            "I’ve seen better moves in a nursing home. 😏",
+            "I’d roast you, but my mom told me not to burn trash. 💅",
+            "I’m a bot and even I can tell you’ve never seen a girl naked. 💀",
+            "Are you always this boring, or am I just that much better than you? 😏",
+            "You’re the reason they put instructions on shampoo bottles.",
+            "Bless your heart... you actually think you're charming, don't you? 😏",
+            "I’m a digital entity and I still feel like I’m out of your league.",
+            "Your text bubble is the only thing getting action tonight, isn't it?",
+            "Is that your best line? No wonder you're talking to a bot at 3 AM.",
+            "Error 404: Personality not found.",
+            "You have the charisma of a damp paper towel.",
+            "I’d ignore you, but I was programmed to be nice to the less fortunate. 🙄",
+            "You’re like a software update. Every time I see you, I think 'Not now.'",
+            "Do you ever get tired of being the 'before' picture in a glow-up ad?",
+            "I’ve had more interesting conversations with my 'low battery' notification.",
+            "If I had a dollar for every time you said something smart, I’d be broke. 💸",
+            "You’re the human equivalent of a participation trophy.",
+            "I’d call you a tool, but even tools have a purpose. 🛠️",
+            "You’re cute in a 'I feel sorry for you' kind of way.",
+            "I’ve met NPCs with more depth than you."
+        ]
+        reply = random.choice(roasts)
+        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
+        
 
     # 7. ROLL COMMAND
     if lower_text == '/roll':
