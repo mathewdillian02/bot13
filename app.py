@@ -9,6 +9,9 @@ from datetime import datetime
 
 app = Flask(__name__)
 
+# This will hold our user IDs while the bot is running
+member_mids = set()
+
 # Environment Variables
 line_bot_api = LineBotApi(os.environ.get('CHANNEL_ACCESS_TOKEN'))
 handler = WebhookHandler(os.environ.get('CHANNEL_SECRET'))
@@ -28,7 +31,12 @@ def webhook():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
+    # AUTO-LOG: Save the user ID if we don't have it yet
+    current_user_id = event.source.user_id
+    member_mids.add(current_user_id)
+    
     user_text = event.message.text.strip()
+    # ... rest of your code ...
     lower_text = user_text.lower()
 
     # 1. HELP / MENU
