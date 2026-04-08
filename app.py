@@ -1,6 +1,7 @@
 import os
 from flask import Flask, request, abort
 import requests
+import json
 from linebot.models import ImageSendMessage
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
@@ -59,10 +60,24 @@ def handle_message(event):
             reply += "\n\nMmm, lucky you... maybe I should give you a reward? 😏"
         return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
         
-        if lower_text == '/meme':
+        import requests
+
+def get_dank_meme():
+    # Fetch a random meme from r/dankmemes
+    url = "https://meme-api.com/gimme/dankmemes"
+    
+    response = requests.get(url)
+    data = response.json()
+    
+    print(f"Title: {data['title']}")
+    print(f"Link: {data['postLink']}")
+    print(f"Image: {data['url']}")
+
+get_dank_meme()
+if lower_text == '/meme':
             try:
             # This API gets a random meme from subreddits like r/memes or r/dankmemes
-                r = requests.get("https://meme-api.com/gimme").json()
+                r = requests.get("https://meme-api.com/gimme/dankmemes").json()
                 image_url = r['url']
             
             # Check if it's a JPG or PNG (ignores GIFs)
