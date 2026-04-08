@@ -44,18 +44,31 @@ def handle_message(event):
     # 2. MEME COMMAND
     if lower_text == '/meme':
         try:
-            r = requests.get("https://meme-api.com/gimme/dankmemes").json()
+            # We switch to /memes which is much more likely to have static JPG/PNG files
+            r = requests.get("https://meme-api.com/gimme/memes").json()
             image_url = r.get('url')
+            
+            # Use .lower() to ensure we catch .JPG and .PNG as well
             if image_url and image_url.lower().endswith(('.jpg', '.png', '.jpeg')):
                 return line_bot_api.reply_message(
                     event.reply_token,
-                    ImageSendMessage(original_content_url=image_url, preview_image_url=image_url)
+                    ImageSendMessage(
+                        original_content_url=image_url,
+                        preview_image_url=image_url
+                    )
                 )
             else:
-                return line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Found a GIF, try /meme again! 😏"))
-        except:
-            return line_bot_api.reply_message(event.reply_token, TextSendMessage(text="I'm too distracted for memes right now... 💦"))
-
+                # Fallback message if it's still a GIF
+                return line_bot_api.reply_message(
+                    event.reply_token, 
+                    TextSendMessage(text="I found a spicy GIF, but I can only show photos. Try /meme again! 😏")
+                )
+        except Exception as e:
+            print(f"Meme Error: {e}")
+            return line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text="I'm a bit tied up right now... try again? 💦")
+            )
     # 3. ROLL COMMAND
     if lower_text == '/roll':
         import random
