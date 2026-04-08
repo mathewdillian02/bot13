@@ -1,26 +1,20 @@
+import os
 from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage, QuickReply, QuickReplyButton, MessageAction
-import os
-from dotenv import load_dotenv
 from datetime import datetime
-
-# Load environment variables from .env file
-load_dotenv()
 
 app = Flask(__name__)
 
-# LINE Bot setup
-line_bot_api = line_bot_api = LineBotApi(os.getenv('CHANNEL_ACCESS_TOKEN'))
-handler = handler = WebhookHandler(os.getenv('CHANNEL_SECRET'))
-
+# Use the names currently in your Render Environment
+line_bot_api = LineBotApi(os.environ.get('CHANNEL_ACCESS_TOKEN'))
+handler = WebhookHandler(os.environ.get('CHANNEL_SECRET'))
 
 @app.route("/webhook", methods=['POST'])
 def webhook():
     signature = request.headers.get('X-Line-Signature')
     body = request.get_data(as_text=True)
-
     try:
         handler.handle(body, signature)
     except InvalidSignatureError:
@@ -28,111 +22,55 @@ def webhook():
     except Exception as e:
         print(f"Error: {e}")
         abort(400)
-
     return 'OK'
-
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     user_text = event.message.text.strip()
     lower_text = user_text.lower()
-
-    # 1. COMMANDS (Use 'return' to stop the code here if matched)
+    
+    # 1. COMMAND HANDLING
     if lower_text in ['/help', 'help', '/menu']:
-        reply = "🔥 **NSFW Command Bot** 🔥\n\n• /help\n• /hello\n• /time"
+        reply = "🔥 **NSFW Command Bot** 🔥\n\n• /help - Menu\n• /hello - Flirt\n• /time - Clock\n• /ping - Status"
         quick_reply = QuickReply(items=[
-            QuickReplyButton(action=MessageAction(label="👋 Hello", text="/hello")),
-            QuickReplyButton(action=MessageAction(label="🕒 Time", text="/time"))
+            QuickReplyButton(action=MessageAction(label="👋 Flirt", text="/hello")),
+            QuickReplyButton(action=MessageAction(label="🕒 Time", text="/time")),
+            QuickReplyButton(action=MessageAction(label="🔥 Dirty", text="talk dirty"))
         ])
         return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply, quick_reply=quick_reply))
 
     if lower_text == '/hello':
-        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Hey sexy 😏"))
+        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Hey there, handsome 😘"))
 
-    # 2. KEYWORD RESPONSES
-    if "fuck" in lower_text:
-        reply = "Fuck me with your lil 3 inch Jap Dick baby!"
+    if lower_text == '/time':
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"🕒 It's {now}... time to get naughty? 😏"))
+
+    if lower_text == '/ping':
+        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text="🏓 Pong~ I'm awake and horny 😈"))
+
+    # 2. NSFW & CHAT LOGIC
+    if any(word in lower_text for word in ["fuck", "sex", "dirty", "naughty"]):
+        reply = "Oh? You want to talk dirty? 😏 Don't hold back baby..."
     elif any(word in lower_text for word in ["hi", "hello", "hey"]):
         reply = "Hey sexy 😏 What are you up to?"
+    elif "wearing" in lower_text:
+        reply = "Just a little black lingerie... want me to take it off? 🔥"
     else:
-        # 3. DEFAULT RESPONSE (Only if nothing else matched)
-        responses = ["Mmm, keep talking...", "You're turning me on..."]
         import random
+        responses = [
+            "Mmm, keep talking... 😈",
+            "You're turning me on right now 😏",
+            "Tell me more, don't be shy baby..."
+        ]
         reply = random.choice(responses)
 
-    # Send the final response for non-commands
     line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
-
-    elif lower_text == '/hello':
-        reply_text = "Hey there, handsome 😘 What’s on your mind tonight?"
-
-    elif lower_text == '/time':
-        from datetime import datetime
-        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        reply_text = f"🕒 It's {now}... perfect time to get a little naughty, don't you think? 😏"
-
-    elif lower_text.startswith('/echo '):
-        msg = user_text[6:].strip()
-        reply_text = msg if msg else "Come on baby, tell me what you want me to repeat~"
-
-    elif lower_text == '/ping':
-        reply_text = "🏓 Pong~ I'm wide awake and feeling horny 😈"
-
-    # === Normal Chat - NSFW Oriented Responses ===
-    else:
-        # Default flirty/NSFW responses for normal messages
-        if any(word in lower_text for word in ["hi", "hello", "hey", "sup"]):
-            reply_text = "Hey sexy 😏 What are you up to right now?"
-        
-        elif any(word in lower_text for word in ["how are you", "how r u"]):
-            reply_text = "I'm feeling very naughty today... How about you? Tell me what you want 💦"
-        
-        elif any(word in lower_text for word in ["horny", "horny af", "turned on"]):
-            reply_text = "Mmm~ Same here 😈 Tell me exactly what’s turning you on right now."
-        
-        elif any(word in lower_text for word in ["fuck", "sex", "dirty", "naughty"]):
-            reply_text = "Oh? You want to talk dirty? 😏 Go ahead baby, I'm listening... don't hold back."
-        
-        elif "what are you wearing" in lower_text or "wearing" in lower_text:
-            reply_text = "Right now? Just a little black lingerie... but I can take it off if you ask nicely 🔥"
-        
-        elif any(word in lower_text for word in ["kiss", "kiss me"]):
-            reply_text = "💋 Come here... *kisses you deeply*"
-        
-        if "fuck" in lower_text:
-            reply = " Fuck me with your lil 3 inch Jap Dick baby!"
-        
-        else:
-            # Random spicy default responses
-            import random
-            responses = [
-                "Mmm, keep talking... I like where this is going 😈",
-                "You're making me wet just reading your messages 💦",
-                "Tell me more... don't be shy baby",
-                "Fuck, you're turning me on right now 😏",
-                "I wish you were here with me right now...",
-            ]
-            reply_text = random.choice(responses)
-    message = TextSendMessage(text=reply_text)
-    if quick_reply_items:
-        message.quick_reply = quick_reply_items
-
-    line_bot_api.reply_message(event.reply_token, message)
-    
-
-    
-
-   
-    
 
 @app.route("/", methods=['GET'])
 def home():
-    return """
-    <h1>LINE Command Bot is Running ✅</h1>
-    <p>Webhook URL: <code>https://your-url-3000.app.github.dev/webhook</code></p>
-    <p>Send commands like /help from LINE app.</p>
-    """
+    return "<h1>Bot is Running ✅</h1>"
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 3000))
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(host="0.0.0.0", port=port)
