@@ -36,25 +36,32 @@ def webhook():
 def handle_message(event):
     user_text = event.message.text.strip()
     lower_text = user_text.lower()
-    reply_text = "mmm, I'm listening"
-    quick_reply_items = None
-    # === Command Handling (still works as before) ===
+
+    # 1. COMMANDS (Use 'return' to stop the code here if matched)
     if lower_text in ['/help', 'help', '/menu']:
-        reply_text = "🔥 **NSFW Command Bot** 🔥\n\n" \
-                     "Available commands:\n" \
-                     "• /help - Show this menu\n" \
-                     "• /hello - Flirty greeting\n" \
-                     "• /time - Current time\n" \
-                     "• /echo [text] - Repeat your message\n" \
-                     "• /ping - Check if I'm awake\n\n" \
-                     "Or just chat with me normally... I'm in a naughty mood 😏"
-        
-        from linebot.models import QuickReply, QuickReplyButton, MessageAction
-        quick_reply_items = QuickReply(items=[
-            QuickReplyButton(action=MessageAction(label="👋 Flirt with me", text="/hello")),
-            QuickReplyButton(action=MessageAction(label="🕒 Time", text="/time")),
-            QuickReplyButton(action=MessageAction(label="🔥 Tell me something dirty", text="talk dirty")),
+        reply = "🔥 **NSFW Command Bot** 🔥\n\n• /help\n• /hello\n• /time"
+        quick_reply = QuickReply(items=[
+            QuickReplyButton(action=MessageAction(label="👋 Hello", text="/hello")),
+            QuickReplyButton(action=MessageAction(label="🕒 Time", text="/time"))
         ])
+        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply, quick_reply=quick_reply))
+
+    if lower_text == '/hello':
+        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Hey sexy 😏"))
+
+    # 2. KEYWORD RESPONSES
+    if "fuck" in lower_text:
+        reply = "Fuck me with your lil 3 inch Jap Dick baby!"
+    elif any(word in lower_text for word in ["hi", "hello", "hey"]):
+        reply = "Hey sexy 😏 What are you up to?"
+    else:
+        # 3. DEFAULT RESPONSE (Only if nothing else matched)
+        responses = ["Mmm, keep talking...", "You're turning me on..."]
+        import random
+        reply = random.choice(responses)
+
+    # Send the final response for non-commands
+    line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
 
     elif lower_text == '/hello':
         reply_text = "Hey there, handsome 😘 What’s on your mind tonight?"
@@ -92,8 +99,8 @@ def handle_message(event):
         elif any(word in lower_text for word in ["kiss", "kiss me"]):
             reply_text = "💋 Come here... *kisses you deeply*"
         
-        elif "fuck" in lower_text:
-            reply_text = " Fuck me with your lil 3 inch Jap Dick baby!"
+        if "fuck" in lower_text:
+            reply = " Fuck me with your lil 3 inch Jap Dick baby!"
         
         else:
             # Random spicy default responses
