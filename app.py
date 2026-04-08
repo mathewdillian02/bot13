@@ -69,6 +69,14 @@ def handle_message(event):
                 event.reply_token,
                 TextSendMessage(text="I'm a bit tied up right now... try again? 💦")
             )
+    if lower_text == '/mids':
+        # Get the ID of the user who sent the message
+        user_id = event.source.user_id
+        reply = f"👤 Your User ID:\n{user_id}\n\nKeep this safe, sexy 😏"
+        return line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text=reply)
+        )
     # 3. ROLL COMMAND
     if lower_text == '/roll':
         import random
