@@ -92,6 +92,9 @@ def handle_message(event):
         elif any(word in lower_text for word in ["kiss", "kiss me"]):
             reply_text = "💋 Come here... *kisses you deeply*"
         
+        elif "fuck" in lower_text:
+            reply_text = " Fuck me with your lil 3 inch Jap Dick baby!"
+        
         else:
             # Random spicy default responses
             import random
