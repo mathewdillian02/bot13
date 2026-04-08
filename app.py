@@ -62,11 +62,12 @@ def handle_message(event):
 
     if lower_text == '/meme':
         try:
-            # Fetching specifically from dankmemes
+            # Step A: Get the data from the API
             r = requests.get("https://meme-api.com/gimme/dankmemes").json()
             image_url = r.get('url')
             
-            if image_url and image_url.endswith(('.jpg', '.png', '.jpeg')):
+            # Step B: Check if it's a valid image type
+            if image_url and image_url.lower().endswith(('.jpg', '.png', '.jpeg')):
                 return line_bot_api.reply_message(
                     event.reply_token,
                     ImageSendMessage(
@@ -77,7 +78,7 @@ def handle_message(event):
             else:
                 return line_bot_api.reply_message(
                     event.reply_token, 
-                    TextSendMessage(text="I found a dank one, but it's a GIF. Try /meme again! 😏")
+                    TextSendMessage(text="I found a dank one, but the format was weird. Try /meme again! 😏")
                 )
         except Exception as e:
             print(f"Meme Error: {e}")
@@ -86,37 +87,17 @@ def handle_message(event):
                 TextSendMessage(text="Ugh, I'm too distracted to find a meme... 💦")
             )
 
-    # 2. NSFW & CHAT LOGIC (Only runs if no command matched)
+    # 3. CHAT LOGIC (Only runs if NO command matched)
     if any(word in lower_text for word in ["fuck", "sex", "dirty", "naughty"]):
         reply = "Oh? You want to talk dirty? 😏 Don't hold back baby..."
     elif any(word in lower_text for word in ["hi", "hello", "hey"]):
         reply = "Hey sexy 😏 What are you up to?"
-    elif "wearing" in lower_text:
-        reply = "Just a little black lingerie... want me to take it off? 🔥"
     else:
         import random
-        responses = ["Mmm, keep talking... 😈", "You're turning me on right now 😏", "Tell me more, don't be shy baby..."]
+        responses = ["Mmm, keep talking... 😈", "You're turning me on... 😏"]
         reply = random.choice(responses)
-    
+
     return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
-
-    # 2. NSFW & CHAT LOGIC
-    if any(word in lower_text for word in ["fuck", "sex", "dirty", "naughty"]):
-        reply = "Oh? You want to talk dirty? 😏 Don't hold back baby..."
-    elif any(word in lower_text for word in ["hi", "hello", "hey"]):
-        reply = "Hey sexy 😏 What are you up to?"
-    elif "wearing" in lower_text:
-        reply = "Just a little black lingerie... want me to take it off? 🔥"
-    else:
-        import random
-        responses = [
-            "Mmm, keep talking... 😈",
-            "You're turning me on right now 😏",
-            "Tell me more, don't be shy baby..."
-        ]
-        reply = random.choice(responses)
-
-    line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
 
 @app.route("/", methods=['GET'])
 def home():
