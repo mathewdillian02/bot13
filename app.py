@@ -109,9 +109,12 @@ def handle_message(event):
             "If I had a dollar for every time you said something smart, I’d be broke. 💸"
             # Add more from the list of 100 here!
         ]
-        reply = random.choice(roasts)
-        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
-    # 6. CHAT LOGIC (Fallback)
+        
+            reply = random.choice(roasts)
+        
+            return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
+    
+        # 6. CHAT LOGIC (Fallback)
     if any(word in lower_text for word in ["fuck", "sex", "dirty"]):
         reply = "Oh? You want to talk dirty? 😏"
     elif "hello" in lower_text or "hi" in lower_text:
