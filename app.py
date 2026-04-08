@@ -58,9 +58,7 @@ def handle_message(event):
         reply = f"🎲 You rolled a {result}!"
         if result > 4:
             reply += "\n\nMmm, lucky you... maybe I should give you a reward? 😏"
-        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
-        
-        import requests
+        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply)
 
 def get_dank_meme():
     # Fetch a random meme from r/dankmemes
@@ -75,26 +73,26 @@ def get_dank_meme():
 
 get_dank_meme()
 if lower_text == '/meme':
-            try:
+        try:
             # This API gets a random meme from subreddits like r/memes or r/dankmemes
-                r = requests.get("https://meme-api.com/gimme/dankmemes").json()
-                image_url = r['url']
+            r = requests.get("https://meme-api.com/gimme/dankmemes").json()
+            image_url = r['url']
             
             # Check if it's a JPG or PNG (ignores GIFs)
-                if image_url.endswith(('.jpg', '.png', '.jpeg')):
-                    return line_bot_api.reply_message(
-                        event.reply_token,
-                        ImageSendMessage(
-                            original_content_url=image_url,
-                            preview_image_url=image_url
-                        )
+            if image_url.endswith(('.jpg', '.png', '.jpeg')):
+                return line_bot_api.reply_message(
+                    event.reply_token,
+                    ImageSendMessage(
+                        original_content_url=image_url,
+                        preview_image_url=image_url
                     )
-                else:
+                )
+            else:
                 # If it's a GIF, just try again once or send a text fallback
-                    return line_bot_api.reply_message(
-                        event.reply_token, 
-                        TextSendMessage(text="I found a spicy one, but it's a video. Try /meme again! 😏")
-                    )
+                return line_bot_api.reply_message(
+                    event.reply_token, 
+                    TextSendMessage(text="I found a spicy one, but it's a video. Try /meme again! 😏")
+                )
             except Exception as e:
                 print(f"Meme Error: {e}")
                 return line_bot_api.reply_message(
