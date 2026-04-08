@@ -35,37 +35,35 @@ def handle_message(event):
     current_user_id = event.source.user_id
     member_mids.add(current_user_id)
     
-    # 1. MUTE CHECK: If they are muted, ignore them completely
-    if current_user_id in muted_users:
-        return 
-
+    @handler.add(MessageEvent, message=TextMessage)
+def handle_message(event):
+    current_user_id = event.source.user_id
+    member_mids.add(current_user_id)
+    
     user_text = event.message.text.strip()
     lower_text = user_text.lower()
 
-    # 2. BANNED WORDS CHECK
-    # Add any words here that you want to trigger an automatic mute
-    banned_words = ["spam", "bot", "advertisement"] 
-    if any(word in lower_text for word in banned_words):
-        muted_users.add(current_user_id)
-        reply = "🚫 You used a banned word. You are now muted until the master resets me. 😏"
-        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
-
-    # 3. ADMIN COMMANDS
-    if lower_text == '/mids':
-        if current_user_id == ADMIN_ID:
-            id_list = "\n".join([f"• {mid}" for mid in member_mids])
-            reply = f"👥 **Captured Member IDs:**\n\n{id_list}\n\nTotal: {len(member_mids)}"
-        else:
-            reply = "Nice try, sexy... but only my master can see that list. 😏"
-        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
-
-    # New Admin Command: /unmute_all
+    # 1. ADMIN COMMANDS (MUST be before Mute Check)
     if lower_text == '/unmute_all' and current_user_id == ADMIN_ID:
         muted_users.clear()
-        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text="✅ All users have been unmuted. Behave yourselves! 😏"))
+        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text="✅ Master, I've cleared the mute list. I'm all yours again! 😏"))
 
-    # ... keep the rest of your commands (meme, roast, roll, etc.) below this ...
-    # 3. HELP / MENU
+    if lower_text == '/mids' and current_user_id == ADMIN_ID:
+        id_list = "\n".join([f"• {mid}" for mid in member_mids])
+        reply = f"👥 **Captured Member IDs:**\n\n{id_list}\n\nTotal: {len(member_mids)}"
+        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
+
+    # 2. MUTE CHECK (Ignore regular users who are muted)
+    if current_user_id in muted_users:
+        return 
+
+    # 3. BANNED WORDS CHECK
+    banned_words = ["spam", "advertisement"] # Add words here
+    if any(word in lower_text for word in banned_words):
+        muted_users.add(current_user_id)
+        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text="🚫 Banned word detected. You've been muted. 😏"))
+
+    # ... keep the rest of your commands (meme, roast, etc.) below ... # 3. HELP / MENU
     if lower_text in ['/help', 'help', '/menu']:
         reply = "🔥 **NSFW Command Bot** 🔥\n\n• /help - Menu\n• /meme - Dank Memes\n• /roll - Dice\n• /roast - Get Burned"
         quick_reply = QuickReply(items=[
@@ -91,7 +89,7 @@ def handle_message(event):
             return line_bot_api.reply_message(event.reply_token, TextSendMessage(text="I'm too distracted for memes... 💦"))
 
     # 5. ROAST COMMAND
-    if lower_text.startswith('/roast'):
+    if lower_text.startswith('roast'):
         roasts = [
             "I’ve seen better moves in a nursing home. 😏",
             "I’d roast you, but my mom told me not to burn trash. 💅",
