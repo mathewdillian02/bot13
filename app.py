@@ -87,12 +87,30 @@ def handle_message(event):
         except:
             return line_bot_api.reply_message(event.reply_token, TextSendMessage(text="I'm too distracted for memes... 💦"))
 
-    # 5. ROLL COMMAND
-    if lower_text == '/roll':
+    # 5. ROAST COMMAND
+    if lower_text.startswith('/roast'):
         import random
-        result = random.randint(1, 6)
-        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"🎲 You rolled a {result}!"))
-
+        roasts = [
+            "I’ve seen better moves in a nursing home. 😏",
+            "I’d roast you, but my mom told me not to burn trash. 💅",
+            "I’m a bot and even I can tell you’ve never seen a girl naked. 💀",
+            "Are you always this boring, or am I just that much better than you? 😏",
+            "You’re the reason they put instructions on shampoo bottles.",
+            "Bless your heart... you actually think you're charming, don't you? 😏",
+            "I’m a digital entity and I still feel like I’m out of your league.",
+            "Your text bubble is the only thing getting action tonight, isn't it?",
+            "Is that your best line? No wonder you're talking to a bot at 3 AM.",
+            "Error 404: Personality not found.",
+            "You have the charisma of a damp paper towel.",
+            "I’d ignore you, but I was programmed to be nice to the less fortunate. 🙄",
+            "You’re like a software update. Every time I see you, I think 'Not now.'",
+            "Do you ever get tired of being the 'before' picture in a glow-up ad?",
+            "I’ve had more interesting conversations with my 'low battery' notification.",
+            "If I had a dollar for every time you said something smart, I’d be broke. 💸"
+            # Add more from the list of 100 here!
+        ]
+        reply = random.choice(roasts)
+        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
     # 6. CHAT LOGIC (Fallback)
     if any(word in lower_text for word in ["fuck", "sex", "dirty"]):
         reply = "Oh? You want to talk dirty? 😏"
