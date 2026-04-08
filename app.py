@@ -58,33 +58,33 @@ def handle_message(event):
         reply = f"🎲 You rolled a {result}!"
         if result > 4:
             reply += "\n\nMmm, lucky you... maybe I should give you a reward? 😏")
-        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply)
+        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
     
         if lower_text == '/meme':
             try:
             # We add /dankmemes to the end of the URL to target that specific subreddit
-            r = requests.get("https://meme-api.com/gimme/dankmemes").json()
-            image_url = r['url']
+                r = requests.get("https://meme-api.com/gimme/dankmemes").json()
+                image_url = r['url']
             
-            if image_url.endswith(('.jpg', '.png', '.jpeg')):
+                if image_url.endswith(('.jpg', '.png', '.jpeg')):
+                    return line_bot_api.reply_message(
+                        event.reply_token,
+                        ImageSendMessage(
+                            original_content_url=image_url,
+                            preview_image_url=image_url
+                        )
+                    )
+                else:
+                    return line_bot_api.reply_message(
+                        event.reply_token, 
+                        TextSendMessage(text="I found a dank one, but it's a GIF. Try /meme again! 😏")
+                    )
+            except Exception as e:
+                print(f"Meme Error: {e}")
                 return line_bot_api.reply_message(
                     event.reply_token,
-                    ImageSendMessage(
-                        original_content_url=image_url,
-                        preview_image_url=image_url
-                    )
+                    TextSendMessage(text="Ugh, I'm too distracted to find a meme right now... 💦")
                 )
-            else:
-                return line_bot_api.reply_message(
-                    event.reply_token, 
-                    TextSendMessage(text="I found a dank one, but it's a GIF. Try /meme again! 😏")
-                )
-        except Exception as e:
-            print(f"Meme Error: {e}")
-            return line_bot_api.reply_message(
-                event.reply_token,
-                TextSendMessage(text="Ugh, I'm too distracted to find a meme right now... 💦")
-            )
 
     # 2. NSFW & CHAT LOGIC
     if any(word in lower_text for word in ["fuck", "sex", "dirty", "naughty"]):
