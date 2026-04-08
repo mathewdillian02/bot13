@@ -115,7 +115,19 @@ def handle_message(event):
     # 7. ROLL COMMAND
     if lower_text == '/roll':
         return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"🎲 You rolled a {random.randint(1, 6)}!"))
-
+    # 8. INFO COMMAND
+    if lower_text == '/info':
+        info_text = (
+            "🤖 **Bot Status:** Active & Filthy 😏\n"
+            "🛠️ **Version:** 1.2 (NSFW Edition)\n"
+            "👑 **Master:** @mathewdillian02\n\n"
+            "I'm here to serve memes, roasts, and a little bit of trouble. "
+            "Use /help to see my full menu of naughty tricks."
+        )
+        return line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text=info_text)
+        )
     # 8. CHAT LOGIC (Fallback)
     if any(word in lower_text for word in ["fuck", "sex", "dirty"]):
         reply = "Oh? You want to talk dirty? 😏"
