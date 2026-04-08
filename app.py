@@ -41,6 +41,67 @@ def handle_message(event):
     # AUTO-LOG: Save the user ID if we don't have it yet
     current_user_id = event.source.user_id
     member_mids.add(current_user_id)
+    @handler.add(MessageEvent, message=TextMessage)
+def handle_message(event):
+    # 1. SETUP & AUTO-LOG
+    current_user_id = event.source.user_id
+    member_mids.add(current_user_id)
+    
+    # PASTE YOUR ID BETWEEN THE QUOTES BELOW
+    ADMIN_ID = "U195b384a10e29369b0a3737d860a5994"
+    
+    user_text = event.message.text.strip()
+    lower_text = user_text.lower()
+
+    # 2. ADMIN COMMAND: /mids
+    if lower_text == '/mids':
+        if current_user_id == ADMIN_ID:
+            id_list = "\n".join([f"• {mid}" for mid in member_mids])
+            reply = f"👥 **Captured Member IDs:**\n\n{id_list}\n\nTotal: {len(member_mids)}"
+        else:
+            reply = "Nice try, sexy... but only my master can see that list. 😏"
+        
+        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
+
+    # 3. HELP / MENU
+    if lower_text in ['/help', 'help', '/menu']:
+        reply = "🔥 **NSFW Command Bot** 🔥\n\n• /help - Menu\n• /meme - Dank Memes\n• /roll - Dice"
+        quick_reply = QuickReply(items=[
+            QuickReplyButton(action=MessageAction(label="🖼️ Meme", text="/meme")),
+            QuickReplyButton(action=MessageAction(label="🎲 Roll", text="/roll"))
+        ])
+        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply, quick_reply=quick_reply))
+
+    # 4. MEME COMMAND
+    if lower_text == '/meme':
+        try:
+            r = requests.get("https://meme-api.com/gimme/memes").json()
+            image_url = r.get('url')
+            if image_url and image_url.lower().endswith(('.jpg', '.png', '.jpeg')):
+                return line_bot_api.reply_message(
+                    event.reply_token,
+                    ImageSendMessage(original_content_url=image_url, preview_image_url=image_url)
+                )
+            else:
+                return line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Found a GIF, try /meme again! 😏"))
+        except:
+            return line_bot_api.reply_message(event.reply_token, TextSendMessage(text="I'm too distracted for memes... 💦"))
+
+    # 5. ROLL COMMAND
+    if lower_text == '/roll':
+        import random
+        result = random.randint(1, 6)
+        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"🎲 You rolled a {result}!"))
+
+    # 6. CHAT LOGIC (Fallback)
+    if any(word in lower_text for word in ["fuck", "sex", "dirty"]):
+        reply = "Oh? You want to talk dirty? 😏"
+    elif "hello" in lower_text or "hi" in lower_text:
+        reply = "Hey sexy 😏"
+    else:
+        reply = "Mmm, keep talking... 😈"
+    
+    return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
     
     user_text = event.message.text.strip()
     # ... rest of your code ...
