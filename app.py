@@ -6,7 +6,7 @@ from linebot.models import MessageEvent, TextMessage, TextSendMessage
 from dotenv import load_dotenv
 
 # Load variables from .env file
-load_dotenv()
+#load_dotenv()
 
 app = Flask(__name__)
 
