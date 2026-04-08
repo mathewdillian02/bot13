@@ -1,6 +1,7 @@
 import os
 import requests
 import json
+import random
 from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
@@ -9,19 +10,11 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# This will hold our user IDs while the bot is running
-if lower_text == '/mids':
-        # Join all saved IDs into a numbered list
-        id_list = "\n".join([f"• {mid}" for mid in member_mids])
-        reply = f"👥 **Captured Member IDs:**\n\n{id_list}\n\nTotal: {len(member_mids)}"
-        return line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text=reply)
-        ))
-
-# Environment Variables
+# 1. SETUP & STORAGE
 line_bot_api = LineBotApi(os.environ.get('CHANNEL_ACCESS_TOKEN'))
 handler = WebhookHandler(os.environ.get('CHANNEL_SECRET'))
+member_mids = set() 
+ADMIN_ID = "U195b384a10e29369b0a3737d860a5994"
 
 @app.route("/webhook", methods=['POST'])
 def webhook():
@@ -38,17 +31,9 @@ def webhook():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    # AUTO-LOG: Save the user ID if we don't have it yet
+    # AUTO-LOG: Save the user ID
     current_user_id = event.source.user_id
     member_mids.add(current_user_id)
-    @handler.add(MessageEvent, message=TextMessage)
-def handle_message(event):
-    # 1. SETUP & AUTO-LOG
-    current_user_id = event.source.user_id
-    member_mids.add(current_user_id)
-    
-    # PASTE YOUR ID BETWEEN THE QUOTES BELOW
-    ADMIN_ID = "U195b384a10e29369b0a3737d860a5994"
     
     user_text = event.message.text.strip()
     lower_text = user_text.lower()
@@ -60,15 +45,15 @@ def handle_message(event):
             reply = f"👥 **Captured Member IDs:**\n\n{id_list}\n\nTotal: {len(member_mids)}"
         else:
             reply = "Nice try, sexy... but only my master can see that list. 😏"
-        
         return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
 
     # 3. HELP / MENU
     if lower_text in ['/help', 'help', '/menu']:
-        reply = "🔥 **NSFW Command Bot** 🔥\n\n• /help - Menu\n• /meme - Dank Memes\n• /roll - Dice"
+        reply = "🔥 **NSFW Command Bot** 🔥\n\n• /help - Menu\n• /meme - Dank Memes\n• /roll - Dice\n• /roast - Get Burned"
         quick_reply = QuickReply(items=[
             QuickReplyButton(action=MessageAction(label="🖼️ Meme", text="/meme")),
-            QuickReplyButton(action=MessageAction(label="🎲 Roll", text="/roll"))
+            QuickReplyButton(action=MessageAction(label="🎲 Roll", text="/roll")),
+            QuickReplyButton(action=MessageAction(label="🔥 Roast", text="/roast"))
         ])
         return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply, quick_reply=quick_reply))
 
@@ -89,7 +74,6 @@ def handle_message(event):
 
     # 5. ROAST COMMAND
     if lower_text.startswith('/roast'):
-        import random
         roasts = [
             "I’ve seen better moves in a nursing home. 😏",
             "I’d roast you, but my mom told me not to burn trash. 💅",
@@ -107,83 +91,19 @@ def handle_message(event):
             "Do you ever get tired of being the 'before' picture in a glow-up ad?",
             "I’ve had more interesting conversations with my 'low battery' notification.",
             "If I had a dollar for every time you said something smart, I’d be broke. 💸"
-            # Add more from the list of 100 here!
         ]
-        
-            reply = random.choice(roasts)
-        
-            return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
-    
-        # 6. CHAT LOGIC (Fallback)
-    if any(word in lower_text for word in ["fuck", "sex", "dirty"]):
-        reply = "Oh? You want to talk dirty? 😏"
-    elif "hello" in lower_text or "hi" in lower_text:
-        reply = "Hey sexy 😏"
-    else:
-        reply = "Mmm, keep talking... 😈"
-    
-    return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
-    
-    user_text = event.message.text.strip()
-    # ... rest of your code ...
-    lower_text = user_text.lower()
+        reply = random.choice(roasts)
+        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
 
-    # 1. HELP / MENU
-    if lower_text in ['/help', 'help', '/menu']:
-        reply = "🔥 **NSFW Command Bot** 🔥\n\n• /help - Menu\n• /hello - Flirt\n• /meme - Dank Memes\n• /roll - Dice"
-        quick_reply = QuickReply(items=[
-            QuickReplyButton(action=MessageAction(label="👋 Flirt", text="/hello")),
-            QuickReplyButton(action=MessageAction(label="🖼️ Meme", text="/meme")),
-            QuickReplyButton(action=MessageAction(label="🎲 Roll", text="/roll"))
-        ])
-        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply, quick_reply=quick_reply))
-
-    # 2. MEME COMMAND
-    if lower_text == '/meme':
-        try:
-            # We switch to /memes which is much more likely to have static JPG/PNG files
-            r = requests.get("https://meme-api.com/gimme/memes").json()
-            image_url = r.get('url')
-            
-            # Use .lower() to ensure we catch .JPG and .PNG as well
-            if image_url and image_url.lower().endswith(('.jpg', '.png', '.jpeg')):
-                return line_bot_api.reply_message(
-                    event.reply_token,
-                    ImageSendMessage(
-                        original_content_url=image_url,
-                        preview_image_url=image_url
-                    )
-                )
-            else:
-                # Fallback message if it's still a GIF
-                return line_bot_api.reply_message(
-                    event.reply_token, 
-                    TextSendMessage(text="I found a spicy GIF, but I can only show photos. Try /meme again! 😏")
-                )
-        except Exception as e:
-            print(f"Meme Error: {e}")
-            return line_bot_api.reply_message(
-                event.reply_token,
-                TextSendMessage(text="I'm a bit tied up right now... try again? 💦")
-            )
-    if lower_text == '/mids':
-        # Get the ID of the user who sent the message
-        user_id = event.source.user_id
-        reply = f"👤 Your User ID:\n{user_id}\n\nKeep this safe, sexy 😏"
-        return line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text=reply)
-        )
-    # 3. ROLL COMMAND
+    # 6. ROLL COMMAND
     if lower_text == '/roll':
-        import random
         result = random.randint(1, 6)
         return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"🎲 You rolled a {result}!"))
 
-    # 4. CHAT LOGIC (Fallback)
+    # 7. CHAT LOGIC (Fallback)
     if any(word in lower_text for word in ["fuck", "sex", "dirty"]):
         reply = "Oh? You want to talk dirty? 😏"
-    elif "hello" in lower_text or "hi" in lower_text:
+    elif any(word in lower_text for word in ["hello", "hi", "hey"]):
         reply = "Hey sexy 😏"
     else:
         reply = "Mmm, keep talking... 😈"
