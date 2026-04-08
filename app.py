@@ -14,6 +14,7 @@ app = Flask(__name__)
 line_bot_api = LineBotApi(os.environ.get('CHANNEL_ACCESS_TOKEN'))
 handler = WebhookHandler(os.environ.get('CHANNEL_SECRET'))
 member_mids = set() 
+muted_users = set()
 ADMIN_ID = "U195b384a10e29369b0a3737d860a5994"
 
 @app.route("/webhook", methods=['POST'])
@@ -31,14 +32,25 @@ def webhook():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    # AUTO-LOG: Save the user ID
     current_user_id = event.source.user_id
     member_mids.add(current_user_id)
     
+    # 1. MUTE CHECK: If they are muted, ignore them completely
+    if current_user_id in muted_users:
+        return 
+
     user_text = event.message.text.strip()
     lower_text = user_text.lower()
 
-    # 2. ADMIN COMMAND: /mids
+    # 2. BANNED WORDS CHECK
+    # Add any words here that you want to trigger an automatic mute
+    banned_words = ["spam", "bot", "advertisement"] 
+    if any(word in lower_text for word in banned_words):
+        muted_users.add(current_user_id)
+        reply = "🚫 You used a banned word. You are now muted until the master resets me. 😏"
+        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
+
+    # 3. ADMIN COMMANDS
     if lower_text == '/mids':
         if current_user_id == ADMIN_ID:
             id_list = "\n".join([f"• {mid}" for mid in member_mids])
@@ -47,6 +59,12 @@ def handle_message(event):
             reply = "Nice try, sexy... but only my master can see that list. 😏"
         return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
 
+    # New Admin Command: /unmute_all
+    if lower_text == '/unmute_all' and current_user_id == ADMIN_ID:
+        muted_users.clear()
+        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text="✅ All users have been unmuted. Behave yourselves! 😏"))
+
+    # ... keep the rest of your commands (meme, roast, roll, etc.) below this ...
     # 3. HELP / MENU
     if lower_text in ['/help', 'help', '/menu']:
         reply = "🔥 **NSFW Command Bot** 🔥\n\n• /help - Menu\n• /meme - Dank Memes\n• /roll - Dice\n• /roast - Get Burned"
