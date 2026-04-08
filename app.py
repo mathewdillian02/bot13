@@ -57,10 +57,11 @@ def handle_message(event):
         result = random.randint(1, 6)
         reply = f"🎲 You rolled a {result}!"
         if result > 4:
-            reply += "\n\nMmm, lucky you... maybe I should give you a reward? 😏"
+            reply += "\n\nMmm, lucky you... maybe I should give you a reward? 😏")
         return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply)
-    if lower_text == '/meme':
-        try:
+    
+        if lower_text == '/meme':
+            try:
             # We add /dankmemes to the end of the URL to target that specific subreddit
             r = requests.get("https://meme-api.com/gimme/dankmemes").json()
             image_url = r['url']
