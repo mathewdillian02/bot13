@@ -80,7 +80,7 @@ if lower_text == '/meme':
             
             # Check if it's a JPG or PNG (ignores GIFs)
             if image_url.endswith(('.jpg', '.png', '.jpeg')):
-                return line_bot_api.reply_message(
+                return line_bot_api.ImageSendMessage(
                     event.reply_token,
                     ImageSendMessage(
                         original_content_url=image_url,
