@@ -48,7 +48,14 @@ def handle_message(event):
 
     if lower_text == '/ping':
         return line_bot_api.reply_message(event.reply_token, TextSendMessage(text="🏓 Pong~ I'm awake and horny 😈"))
-
+        
+    if lower_text == '/roll':
+        import random
+        result = random.randint(1, 6)
+        reply = f"🎲 You rolled a {result}!"
+        if result > 4:
+            reply += "\n\nMmm, lucky you... maybe I should give you a reward? 😏"
+        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
     # 2. NSFW & CHAT LOGIC
     if any(word in lower_text for word in ["fuck", "sex", "dirty", "naughty"]):
         reply = "Oh? You want to talk dirty? 😏 Don't hold back baby..."
