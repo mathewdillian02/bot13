@@ -6,7 +6,6 @@ from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage, ImageSendMessage, QuickReply, QuickReplyButton, MessageAction
-from datetime import datetime
 
 app = Flask(__name__)
 
@@ -35,35 +34,31 @@ def handle_message(event):
     current_user_id = event.source.user_id
     member_mids.add(current_user_id)
     
-    @handler.add(MessageEvent, message=TextMessage)
-def handle_message(event):
-    current_user_id = event.source.user_id
-    member_mids.add(current_user_id)
-    
     user_text = event.message.text.strip()
     lower_text = user_text.lower()
 
-    # 1. ADMIN COMMANDS (MUST be before Mute Check)
-    if lower_text == '/unmute_all' and current_user_id == ADMIN_ID:
-        muted_users.clear()
-        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text="✅ Master, I've cleared the mute list. I'm all yours again! 😏"))
+    # 1. ADMIN COMMANDS (Always checked first, even if muted)
+    if current_user_id == ADMIN_ID:
+        if lower_text == '/unmute_all':
+            muted_users.clear()
+            return line_bot_api.reply_message(event.reply_token, TextSendMessage(text="✅ All users unmuted, Master. I'm listening again! 😏"))
+        
+        if lower_text == '/mids':
+            id_list = "\n".join([f"• {mid}" for mid in member_mids])
+            reply = f"👥 **Captured Member IDs:**\n\n{id_list}\n\nTotal: {len(member_mids)}"
+            return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
 
-    if lower_text == '/mids' and current_user_id == ADMIN_ID:
-        id_list = "\n".join([f"• {mid}" for mid in member_mids])
-        reply = f"👥 **Captured Member IDs:**\n\n{id_list}\n\nTotal: {len(member_mids)}"
-        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
-
-    # 2. MUTE CHECK (Ignore regular users who are muted)
+    # 2. MUTE CHECK (Stops processing for regular muted users)
     if current_user_id in muted_users:
         return 
 
     # 3. BANNED WORDS CHECK
-    banned_words = ["spam", "advertisement"] # Add words here
+    banned_words = ["spam", "advertisement"] 
     if any(word in lower_text for word in banned_words):
         muted_users.add(current_user_id)
-        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text="🚫 Banned word detected. You've been muted. 😏"))
+        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text="🚫 You used a banned word and have been muted. 😏"))
 
-    # ... keep the rest of your commands (meme, roast, etc.) below ... # 3. HELP / MENU
+    # 4. HELP / MENU
     if lower_text in ['/help', 'help', '/menu']:
         reply = "🔥 **NSFW Command Bot** 🔥\n\n• /help - Menu\n• /meme - Dank Memes\n• /roll - Dice\n• /roast - Get Burned"
         quick_reply = QuickReply(items=[
@@ -73,7 +68,7 @@ def handle_message(event):
         ])
         return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply, quick_reply=quick_reply))
 
-    # 4. MEME COMMAND
+    # 5. MEME COMMAND
     if lower_text == '/meme':
         try:
             r = requests.get("https://meme-api.com/gimme/memes").json()
@@ -86,37 +81,18 @@ def handle_message(event):
             else:
                 return line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Found a GIF, try /meme again! 😏"))
         except:
-            return line_bot_api.reply_message(event.reply_token, TextSendMessage(text="I'm too distracted for memes... 💦"))
+            return line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Too distracted for memes... 💦"))
 
-    # 5. ROAST COMMAND
-    if lower_text.startswith('roast'):
-        roasts = [
-            "I’ve seen better moves in a nursing home. 😏",
-            "I’d roast you, but my mom told me not to burn trash. 💅",
-            "I’m a bot and even I can tell you’ve never seen a girl naked. 💀",
-            "Are you always this boring, or am I just that much better than you? 😏",
-            "You’re the reason they put instructions on shampoo bottles.",
-            "Bless your heart... you actually think you're charming, don't you? 😏",
-            "I’m a digital entity and I still feel like I’m out of your league.",
-            "Your text bubble is the only thing getting action tonight, isn't it?",
-            "Is that your best line? No wonder you're talking to a bot at 3 AM.",
-            "Error 404: Personality not found.",
-            "You have the charisma of a damp paper towel.",
-            "I’d ignore you, but I was programmed to be nice to the less fortunate. 🙄",
-            "You’re like a software update. Every time I see you, I think 'Not now.'",
-            "Do you ever get tired of being the 'before' picture in a glow-up ad?",
-            "I’ve had more interesting conversations with my 'low battery' notification.",
-            "If I had a dollar for every time you said something smart, I’d be broke. 💸"
-        ]
-        reply = random.choice(roasts)
-        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
+    # 6. ROAST COMMAND
+    if lower_text.startswith('/roast'):
+        roasts = ["I’d roast you, but my mom told me not to burn trash. 💅", "Error 404: Personality not found.", "You have the charisma of a damp paper towel."]
+        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=random.choice(roasts)))
 
-    # 6. ROLL COMMAND
+    # 7. ROLL COMMAND
     if lower_text == '/roll':
-        result = random.randint(1, 6)
-        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"🎲 You rolled a {result}!"))
+        return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"🎲 You rolled a {random.randint(1, 6)}!"))
 
-    # 7. CHAT LOGIC (Fallback)
+    # 8. CHAT LOGIC (Fallback)
     if any(word in lower_text for word in ["fuck", "sex", "dirty"]):
         reply = "Oh? You want to talk dirty? 😏"
     elif any(word in lower_text for word in ["hello", "hi", "hey"]):
