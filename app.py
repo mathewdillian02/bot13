@@ -129,12 +129,60 @@ def handle_message(event):
             TextSendMessage(text=info_text)
         )
     # 8. CHAT LOGIC (Fallback)
-    if any(word in lower_text for word in ["fuck", "sex", "dirty"]):
-        reply = "Oh? You want to talk dirty? 😏"
-    elif any(word in lower_text for word in ["hello", "hi", "hey"]):
-        reply = "Hey sexy 😏"
-    else:
-        reply = "Mmm, keep talking... 😈"
+    import random
+
+# -----------------------------------------
+# CLEAN, MODULAR FALLBACK LOGIC WITH MODES
+# -----------------------------------------
+
+RESPONSES = {
+    "greeting": [
+        "Hey there.",
+        "Hello, you."
+    ],
+    "confused": [
+        "Not sure what you meant, but I’m listening.",
+        "Try that again in another way."
+    ],
+    "roast": [
+        "That made zero sense, but I respect the effort.",
+        "Bold of you to assume I understood that."
+    ],
+
+    # You can safely add your own NSFW content here
+    "nsfw_mean": [
+        "Fuck",
+        "Make me weeter than your Grandma when she waters her plants!",
+        
+        # <-- Add your own lines here
+    ],
+    "nsfw_dirty": [
+        "Slut", "look at me like im your step sister and gape my asshole",
+        
+                   
+        # <-- Add your own lines here
+    ]
+}
+
+KEYWORD_MAP = {
+    "greeting": ["hello", "hi", "hey"],
+    "nsfw_mean": ["insult", "mean"],   # adjust triggers as you like
+    "nsfw_dirty": ["nsfw", "dirty"],   # adjust triggers as you like
+}
+
+def get_fallback_reply(text):
+    lower = text.lower()
+
+    # Keyword routing
+    for category, keywords in KEYWORD_MAP.items():
+        if any(word in lower for word in keywords):
+            if RESPONSES.get(category):
+                return random.choice(RESPONSES[category])
+
+    # Generic fallback
+    generic = RESPONSES["confused"] + RESPONSES["roast"]
+    return random.choice(generic)
+
     
     return line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
 
